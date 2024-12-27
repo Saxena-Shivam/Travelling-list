@@ -1,17 +1,24 @@
 import { useState } from "react";
+import Modal from "./Modal";
+
 const initialItems = [
   { id: 1, description: "Passports", quantity: 1, packed: false },
   { id: 2, description: "Charger", quantity: 1, packed: false },
 ];
+
 export default function App() {
   const [items, setItems] = useState(initialItems);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   function handleAddItems(event) {
     setItems((items) => [...items, event]);
   }
+
   function handleDeleteItems(id) {
     console.log(id);
     setItems((items) => items.filter((item) => item.id !== id));
   }
+
   function handleTogglePacked(id) {
     setItems((items) =>
       items.map((item) =>
@@ -19,11 +26,20 @@ export default function App() {
       )
     );
   }
+
   function handleClearAll() {
-    const confirm = window.confirm("Are you sure you want to clear all items?");
-    if (!confirm) return;
-    setItems([]);
+    setIsModalOpen(true);
   }
+
+  function confirmClearAll() {
+    setItems([]);
+    setIsModalOpen(false);
+  }
+
+  function cancelClearAll() {
+    setIsModalOpen(false);
+  }
+
   return (
     <div className="app">
       <Logo />
@@ -35,12 +51,21 @@ export default function App() {
         onClearAll={handleClearAll}
       />
       <Stat items={items} />
+      {isModalOpen && (
+        <Modal
+          onConfirm={confirmClearAll}
+          onCancel={cancelClearAll}
+          message="Are you sure you want to clear all items?"
+        />
+      )}
     </div>
   );
 }
+
 function Logo() {
   return <h1>💼FAR AWAY🌴</h1>;
 }
+
 function Form({ onAddItems }) {
   const [description, setDescription] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -55,6 +80,7 @@ function Form({ onAddItems }) {
     setDescription("");
     setQuantity(1);
   }
+
   return (
     <form className="add-form" onSubmit={handleSubmit}>
       <h3>What do you need for trip😍</h3>
@@ -78,6 +104,7 @@ function Form({ onAddItems }) {
     </form>
   );
 }
+
 function PackingList({ items, onDeleteItems, onTogglePacked, onClearAll }) {
   const [sort, setSort] = useState("input");
   let sortedItems = [...items];
@@ -117,7 +144,7 @@ function Item({ item, onDeleteItems, onTogglePacked }) {
     <li>
       <input
         type="checkbox"
-        checked={item.packed} // Corrected attribute
+        checked={item.packed}
         onChange={() => onTogglePacked(item.id)}
       />
       <span style={item.packed ? { textDecoration: "line-through" } : {}}>
@@ -127,6 +154,7 @@ function Item({ item, onDeleteItems, onTogglePacked }) {
     </li>
   );
 }
+
 function Stat({ items }) {
   if (items.length === 0)
     return <p className="stats">Start adding some items 🚀 </p>;
